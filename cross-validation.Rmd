@@ -1,0 +1,73 @@
+---
+title: "cross-validation"
+author: "cathy"
+date: "2024-11-12"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(modelr)
+library(mgcv)
+
+#install.packages(SemiPar)
+library(SemiPar)
+set.seed(1)
+```
+
+look at LIDAR data
+
+```{r}
+data("lidar")
+
+lidar_df =
+  lidar |> 
+  as_tibble() |> 
+  mutate(id = row_number())
+```
+
+```{r}
+lidar_df |> 
+  ggplot(aes(x = range, y = logratio)) +
+  geom_point()
+```
+
+##Try to do CV
+
+we'll compare 3 mdoels  -- one linear, one smooth, one wiggly
+
+constrct training and testing df
+```{r}
+train_df = sample_frac(lidar_df, size = .8)
+test_df = anti_join(lidar_df, train_df, by = "id") # anything in the lidar_df but not in train_df
+```
+
+look at these
+```{r}
+ggplot(train_df, aes(x = range, y = logratio)) +
+  geom_point() +
+  geom_point(data = test_df, color = "red")
+```
+
+
+fit 3 models
+```{r}
+linear_mod = lm(logratio ~ range, data = train_df)
+smooth_mod = gam(logratio ~ s(range), data = train_df)
+wiggly_nod = gam(logratio ~ s(range, k = 30), sp = 10e-6, data = train_df)
+```
+
+look at the fit
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
